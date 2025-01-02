@@ -10,9 +10,10 @@ import com.project.shopapp.exceptions.InvalidParamException;
 import com.project.shopapp.models.Category;
 import com.project.shopapp.models.Product;
 import com.project.shopapp.models.ProductImage;
+import com.project.shopapp.responses.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -47,9 +48,39 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Page<Product> getAllProducts(PageRequest pageRequest) {
+    public ProductResponse getProductByIdV01(Long productId) throws Exception {
+        Product product = getProductById(productId);
+        if(product != null){
+                ProductResponse productResponse = ProductResponse.builder()
+                    .name(product.getName())
+                    .price(product.getPrice())
+                    .thumbnail(product.getThumbnail())
+                    .description(product.getDescription())
+                    .categoryId(product.getCategory().getId())
+                    .build();
+            productResponse.setCreatedAt(product.getCreatedAt());
+            productResponse.setUpdateAt(product.getUpdateAt());
+            return productResponse;
+        }
+        return null;
+    }
+
+    @Override
+    public Page<ProductResponse> getAllProducts(Pageable page) {
         // lay danh sach theo page va limit //
-        return productRepository.findAll(pageRequest);
+        return productRepository.findAll(page).map(product-> {
+                    ProductResponse productResponse = ProductResponse.builder()
+                            .name(product.getName())
+                            .price(product.getPrice())
+                            .thumbnail(product.getThumbnail())
+                            .description(product.getDescription())
+                            .categoryId(product.getCategory().getId())
+                            .build();
+                    productResponse.setCreatedAt(product.getCreatedAt());
+                    productResponse.setUpdateAt(product.getUpdateAt());
+                    return productResponse;
+                }
+        );
     }
 
     @Override
@@ -89,7 +120,7 @@ public class ProductService implements IProductService {
     @Override
     public ProductImage createProductImage(long productId, ProductImageDTO productImageDTO) throws DataNotFoundException, InvalidParamException {
         Product existingProduct = productRepository
-                .findById(productImageDTO.getProductId())
+                .findById(productId)
                 .orElseThrow(()->
                         new DataNotFoundException(
                                 "Can not find product with id: "+ productImageDTO.getProductId()));
@@ -98,8 +129,9 @@ public class ProductService implements IProductService {
                 .imageUrl(productImageDTO.getImageUrl())
                 .build();
         // Khong cho product ton tai tren 5 anh //
-        if(productImageRepository.findByProductId(productId).size() > 5){
-            throw new InvalidParamException("Number of images must be least than 5");
+        int size = productImageRepository.findByProductId(productId).size();
+        if( size >= ProductImage.MAXIMUM_IMAGE){
+            throw new InvalidParamException("Number of images must be least than "+ProductImage.MAXIMUM_IMAGE);
         }
         return productImageRepository.save(newProductImage);
     }

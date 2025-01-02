@@ -11,7 +11,7 @@ import lombok.*;
 @Entity
 @Table(name ="product_images")
 public class ProductImage {
-
+    public static final int MAXIMUM_IMAGE = 5;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -6,11 +6,13 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class ProductDTO {
     @NotEmpty(message = "Name product is required!")
     @Size(min = 3, max = 200, message = "Name product must be between 3 and 200 characters !")
