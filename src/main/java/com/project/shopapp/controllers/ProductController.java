@@ -1,9 +1,16 @@
 package com.project.shopapp.controllers;
 
 
-import com.project.shopapp.dtos.CategoryDTO;
 import com.project.shopapp.dtos.ProductDTO;
+import com.project.shopapp.dtos.ProductImageDTO;
+import com.project.shopapp.exceptions.DataNotFoundException;
+import com.project.shopapp.exceptions.InvalidParamException;
+import com.project.shopapp.models.Product;
+import com.project.shopapp.models.ProductImage;
+import com.project.shopapp.services.IProductService;
+import com.project.shopapp.services.ProductService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +32,11 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("${api.prefix}/products")
+@RequiredArgsConstructor
 public class ProductController {
+
+    private final IProductService productService;
+
     @GetMapping("")
     public ResponseEntity<String> getAllCategories(
             @RequestParam("page") int page,
@@ -38,11 +49,10 @@ public class ProductController {
         return ResponseEntity.ok("get product here with id: " + id);
     }
 
-    @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "")
     // Cho phép upload file //
-    public ResponseEntity<?> addCategory(@Valid @ModelAttribute ProductDTO productDTO,
-                                         BindingResult result
-                                         /*@RequestPart("image") MultipartFile file*/) throws IOException {
+    public ResponseEntity<?> addCategory(@Valid @RequestBody ProductDTO productDTO,
+                                         BindingResult result) {
         if (result.hasErrors()) {
             List<String> errorMessages = result.getFieldErrors()
                     .stream()
@@ -50,32 +60,52 @@ public class ProductController {
                     .toList();
             return ResponseEntity.badRequest().body(errorMessages);
         }
-        List<MultipartFile> files = productDTO.getFiles();
-        files = files == null? new ArrayList<>() : files;
-        for(MultipartFile file : files) {
-            if(files.size() == 0) {
-                continue;
-            }
-            // Kiểm tra kích thước file và định dạng da ok chua //
-            if (file.getSize() > 10 * 1024 * 1024) {
-                // Kich thuoc phai nho hon 10 MB (10mb - 1024kb - 1024byte)
-                return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
-                        .body("File is too large !!Maximum size is 10MB !");
-            }
-
-            // lay dinh dang file //
-            String contentType = file.getContentType();
-            if (contentType == null || !contentType.startsWith("image/")) {
-                return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
-                        .body("File must be an Image !");
-            }
-
-            // Upload file len server va cap nhat url(thumbnail) -> trong dto //
-            String fileName = storeFile(file);
-            // Lưu vào database -> làm sau //
-            // Lưu bảng product_images
+        try {
+            productService.createProduct(productDTO);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return ResponseEntity.ok("Product added is successfully");
+        return ResponseEntity.ok("New product created");
+    }
+
+    @PostMapping(value = "/uploads/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadImages(@PathVariable("id") Long productId,
+                                          @ModelAttribute("files") List<MultipartFile> files) {
+        try {
+            Product existingProduct = productService.getProductById(productId);
+            files = files == null? new ArrayList<>() : files;
+            List<ProductImage> productImages = new ArrayList<>();
+            for(MultipartFile file : files) {
+                if(files.size() == 0) {
+                    continue;
+                }
+                // Kiểm tra kích thước file và định dạng da ok chua //
+                if (file.getSize() > 10 * 1024 * 1024) {
+                    // Kich thuoc phai nho hon 10 MB (10mb - 1024kb - 1024byte)
+                    return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
+                            .body("File is too large !!Maximum size is 10MB !");
+                }
+
+                // lay dinh dang file //
+                String contentType = file.getContentType();
+                if (contentType == null || !contentType.startsWith("image/")) {
+                    return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                            .body("File must be an Image !");
+                }
+
+                // Upload file len server va cap nhat url(thumbnail) -> trong dto //
+                String fileName = storeFile(file);
+
+                ProductImage productImage = productService.createProductImage(existingProduct.getId(),ProductImageDTO
+                        .builder()
+                        .imageUrl(fileName)
+                        .build());
+                productImages.add(productImage);
+            }
+            return ResponseEntity.ok(productImages);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     private String storeFile(MultipartFile file) throws IOException {
