@@ -64,13 +64,12 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getAllCategories(@PathVariable long id) {
-        ProductResponse existingProduct = null;
         try {
-            existingProduct = productService.getProductByIdV01(id);
+            ProductResponse existingProduct = productService.getProductByIdV01(id);
+            return ResponseEntity.ok(existingProduct);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return ResponseEntity.ok(existingProduct);
     }
 
     @PostMapping(value = "")
@@ -149,8 +148,16 @@ public class ProductController {
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<String> updateCategory(@PathVariable long id) {
-        return ResponseEntity.ok("This is the method category updated" + id);
+    public ResponseEntity<?> updateCategory(
+            @PathVariable long id,
+            @RequestBody ProductDTO productDTO
+            ) {
+        try {
+            Product updateProduct = productService.updateProduct(id,productDTO);
+            return ResponseEntity.ok(updateProduct);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
+        }
     }
 
     @DeleteMapping("{id}")

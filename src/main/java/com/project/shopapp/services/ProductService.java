@@ -1,8 +1,8 @@
 package com.project.shopapp.services;
 
-import com.project.shopapp.Repositories.CategoryRepository;
-import com.project.shopapp.Repositories.ProductImageRepository;
-import com.project.shopapp.Repositories.ProductRepository;
+import com.project.shopapp.repositories.CategoryRepository;
+import com.project.shopapp.repositories.ProductImageRepository;
+import com.project.shopapp.repositories.ProductRepository;
 import com.project.shopapp.dtos.ProductDTO;
 import com.project.shopapp.dtos.ProductImageDTO;
 import com.project.shopapp.exceptions.DataNotFoundException;
@@ -51,16 +51,7 @@ public class ProductService implements IProductService {
     public ProductResponse getProductByIdV01(Long productId) throws Exception {
         Product product = getProductById(productId);
         if(product != null){
-                ProductResponse productResponse = ProductResponse.builder()
-                    .name(product.getName())
-                    .price(product.getPrice())
-                    .thumbnail(product.getThumbnail())
-                    .description(product.getDescription())
-                    .categoryId(product.getCategory().getId())
-                    .build();
-            productResponse.setCreatedAt(product.getCreatedAt());
-            productResponse.setUpdateAt(product.getUpdateAt());
-            return productResponse;
+            ProductResponse.fromProduct(product);
         }
         return null;
     }
@@ -68,19 +59,7 @@ public class ProductService implements IProductService {
     @Override
     public Page<ProductResponse> getAllProducts(Pageable page) {
         // lay danh sach theo page va limit //
-        return productRepository.findAll(page).map(product-> {
-                    ProductResponse productResponse = ProductResponse.builder()
-                            .name(product.getName())
-                            .price(product.getPrice())
-                            .thumbnail(product.getThumbnail())
-                            .description(product.getDescription())
-                            .categoryId(product.getCategory().getId())
-                            .build();
-                    productResponse.setCreatedAt(product.getCreatedAt());
-                    productResponse.setUpdateAt(product.getUpdateAt());
-                    return productResponse;
-                }
-        );
+        return productRepository.findAll(page).map(ProductResponse::fromProduct);
     }
 
     @Override

@@ -2,13 +2,13 @@ package com.project.shopapp.models;
 
 public class OrderStatus {
 
-    private static final String PENDING = "Pending";
+    public static final String PENDING = "PENDING";
 
-    private static final String PROCESSING = "Processing";
+    public static final String PROCESSING = "PROCESSING";
 
-    private static final String SHIPPED = "Shipped";
+    public static final String SHIPPED = "SHIPPED";
 
-    private static final String DELIVERED = "Delivered";
+    public static final String DELIVERED = "DELIVERED";
 
-    private static final String CANCELED = "Canceled";
+    public static final String CANCELED = "CANCELED";
 }

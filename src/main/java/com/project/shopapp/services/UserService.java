@@ -1,7 +1,7 @@
 package com.project.shopapp.services;
 
-import com.project.shopapp.Repositories.RoleRepository;
-import com.project.shopapp.Repositories.UserRepository;
+import com.project.shopapp.repositories.RoleRepository;
+import com.project.shopapp.repositories.UserRepository;
 import com.project.shopapp.dtos.UserDTO;
 import com.project.shopapp.exceptions.DataNotFoundException;
 import com.project.shopapp.models.Role;

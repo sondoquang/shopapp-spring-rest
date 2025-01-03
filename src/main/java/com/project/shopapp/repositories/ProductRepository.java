@@ -1,4 +1,4 @@
-package com.project.shopapp.Repositories;
+package com.project.shopapp.repositories;
 
 import com.project.shopapp.models.Product;
 import org.springframework.data.domain.Page;

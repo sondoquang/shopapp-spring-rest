@@ -1,9 +1,9 @@
 package com.project.shopapp.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -39,7 +39,9 @@ public class Order {
     private String note;
 
     @Column(name="order_date")
-    private LocalDateTime orderDate;
+    private Date orderDate;
+
+    private String status;
 
     @Column(name="total_money", nullable = true)
     private Double totalMoney;
@@ -54,6 +56,6 @@ public class Order {
     private Date shippingDate;
 
     @Column(name="active")
-    private String isActive;
+    private boolean active;
 
 }

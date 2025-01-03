@@ -1,5 +1,6 @@
 package com.project.shopapp.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,13 +35,13 @@ public class User extends BaseEntity {
     @Column(name="is_active")
     private boolean isActive;
 
-    @Column(name="date_of_birth")
+    @Column(name="day_of_birth")
     private Date dateOfBirth;
 
-    @Column(name="facebook_account _id")
+    @Column(name="facebook_account_id")
     private int facebookAccountId;
 
-    @Column(name="google_account _id")
+    @Column(name="google_account_id")
     private int googleAccountId;
 
     @ManyToOne
