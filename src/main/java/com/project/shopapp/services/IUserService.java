@@ -8,5 +8,5 @@ public interface IUserService {
 
     User createUser(UserDTO userDTO) throws DataNotFoundException;
     // Login success then return token key --> return String;//
-    String login(String phoneNumber, String password);
+    String login(String phoneNumber, String password) throws DataNotFoundException;
 }
