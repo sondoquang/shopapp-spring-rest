@@ -1,14 +1,11 @@
 package com.project.shopapp.models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.io.Serializable;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -55,36 +52,12 @@ public class User extends BaseEntity implements UserDetails {
     @JoinColumn(name ="role_id")
     private Role role;
 
-    public User( String fullName, String phoneNumber, String address, String password, boolean isActive, Date dateOfBirth, int facebookAccountId, int googleAccountId, Role role) {
-        this.fullName = fullName;
-        this.phoneNumber = phoneNumber;
-        this.address = address;
-        this.password = password;
-        this.isActive = isActive;
-        this.dateOfBirth = dateOfBirth;
-        this.facebookAccountId = facebookAccountId;
-        this.googleAccountId = googleAccountId;
-        this.role = role;
-    }
-
-    public User( String fullName, String phoneNumber, String address, String password, boolean isActive, Date dateOfBirth, int facebookAccountId, int googleAccountId, Role role,LocalDate createdAt, LocalDate updateAt) {
-        super(createdAt, updateAt);
-        this.fullName = fullName;
-        this.phoneNumber = phoneNumber;
-        this.address = address;
-        this.password = password;
-        this.isActive = isActive;
-        this.dateOfBirth = dateOfBirth;
-        this.facebookAccountId = facebookAccountId;
-        this.googleAccountId = googleAccountId;
-        this.role = role;
-    }
-
     // Lay ra cac quyen cua user//
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_"+getRole().getName()));
+        authorities.add(new SimpleGrantedAuthority("ROLE_"+getRole().getName().toUpperCase()));
+//        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
         return authorities;
     }
 

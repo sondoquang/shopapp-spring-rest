@@ -22,5 +22,5 @@ api:
   prefix: api/v1
 jwt:
   expiration: 2592000
-  secretKey: stlang
+  secretKey: rCOg889yQwnY4+n5iiT7oME7+fG5z9b2+yEwE4IyT4g=
 #  30 day: 30 * 24 * 60 * 60 (s)

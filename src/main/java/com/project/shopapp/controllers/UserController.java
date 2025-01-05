@@ -40,7 +40,7 @@ public class UserController {
             userService.createUser(userDTO);
             return ResponseEntity.ok("register is successful");
         }catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 

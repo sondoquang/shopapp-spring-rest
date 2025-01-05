@@ -1,6 +1,8 @@
 package com.project.shopapp.services;
 
 import com.project.shopapp.components.JwtTokenUtils;
+import com.project.shopapp.exceptions.InvalidParamException;
+import com.project.shopapp.exceptions.PermissionDenyException;
 import com.project.shopapp.repositories.RoleRepository;
 import com.project.shopapp.repositories.UserRepository;
 import com.project.shopapp.dtos.UserDTO;
@@ -27,12 +29,18 @@ public class UserService implements IUserService {
     private final AuthenticationManager authenticationManager;
 
     @Override
-    public User createUser(UserDTO userDTO) throws DataNotFoundException {
+    public User createUser(UserDTO userDTO) throws Exception {
         // REGISTER USER //
         String phoneNumber = userDTO.getPhoneNumber();
         // 1. check valid user by phone number //
         if(userRepository.existsByPhoneNumber(phoneNumber)) {
             throw new RuntimeException("Phone number already exists");
+        }
+
+        Role role = roleRepository.findById(userDTO.getRoleId())
+                .orElseThrow(() -> new DataNotFoundException("Role not found"));
+        if(role.getName().toUpperCase().equals(Role.ADMIN)) {
+            throw new PermissionDenyException("You can't create a new user with admin role");
         }
         // 2. Convert form UserDTo to User //
         User newUser = User.builder()
@@ -44,8 +52,6 @@ public class UserService implements IUserService {
                 .facebookAccountId(userDTO.getFacebookAccountId())
                 .googleAccountId(userDTO.getGoogleAccountId())
                 .build();
-        Role role = roleRepository.findById(userDTO.getRoleId())
-                .orElseThrow(() -> new DataNotFoundException("Role not found"));
         newUser.setRole(role);
 
         // 3. Kiểm nếu có accountId --> không cần password
@@ -68,8 +74,8 @@ public class UserService implements IUserService {
         User existingUser = userOptional.get();
 
         // Check password //
-        if(existingUser.getFacebookAccountId() == 0 || existingUser.getGoogleAccountId() == 0){
-            if(passwordEncoder.matches(password, existingUser.getPassword())){
+        if(existingUser.getFacebookAccountId() == 0 && existingUser.getGoogleAccountId() == 0){
+            if(!passwordEncoder.matches(password, existingUser.getPassword())){
                 throw new BadCredentialsException("Wrong phone number or password");
             };
         }
@@ -77,9 +83,14 @@ public class UserService implements IUserService {
         // Authenticate with Java Spring Security //
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationFilter = new UsernamePasswordAuthenticationToken(
                 phoneNumber,
-                password
+                password,
+                existingUser.getAuthorities()
         );
         authenticationManager.authenticate(usernamePasswordAuthenticationFilter);
-        return jwtTokenUtils.generateToken(existingUser);// Muốn trả về JWT token ?
+        try {
+            return jwtTokenUtils.generateToken(existingUser);// Muốn trả về JWT token ?
+        } catch (InvalidParamException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

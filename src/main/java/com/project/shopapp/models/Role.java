@@ -19,5 +19,6 @@ public class Role {
     @Column(name="name", nullable=false)
     private String name;
 
-
+    public final static String ADMIN = "ADMIN";
+    public final static String USER = "USER";
 }
